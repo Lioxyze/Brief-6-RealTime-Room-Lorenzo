@@ -1,0 +1,28 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    image: realtime-room-api:local
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+    image: realtime-room-web:local
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+    environment:
+      API_URL: http://api:3000
+    restart: unless-stopped
+
+networks:
+  default:
+    driver: bridge

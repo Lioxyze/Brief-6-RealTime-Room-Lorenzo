@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: realtime-room-api
+    runtime: docker
+    repo: https://github.com/Lioxyze/Brief-6-WebServeur
+    branch: main
+    dockerfilePath: api/Dockerfile
+    autoDeploy: true
+    plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+    healthCheckPath: /health
+
+  - type: web
+    name: realtime-room-web
+    runtime: docker
+    repo: https://github.com/Lioxyze/Brief-6-WebServeur
+    branch: main
+    dockerfilePath: web/Dockerfile
+    autoDeploy: true
+    plan: free
