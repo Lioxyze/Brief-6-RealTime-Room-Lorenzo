@@ -2,7 +2,7 @@ services:
   - type: web
     name: realtime-room-api
     runtime: docker
-    repo: https://github.com/Lioxyze/Brief-6-WebServeur
+    repo: https://github.com/Lioxyze/Brief-6-RealTime-Room-Lorenzo
     branch: main
     dockerfilePath: api/Dockerfile
     autoDeploy: true
@@ -17,7 +17,7 @@ services:
   - type: web
     name: realtime-room-web
     runtime: docker
-    repo: https://github.com/Lioxyze/Brief-6-WebServeur
+    repo: https://github.com/Lioxyze/Brief-6-RealTime-Room-Lorenzo
     branch: main
     dockerfilePath: web/Dockerfile
     autoDeploy: true
