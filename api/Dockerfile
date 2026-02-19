@@ -1,21 +1,22 @@
-FROM node:24-alpine
+FROM node:20-alpine
 
 WORKDIR /app
 
-RUN apk add --no-cache curl \
- && corepack enable \
- && corepack prepare pnpm@latest --activate
+# pnpm via corepack
+RUN corepack enable && corepack prepare pnpm@9 --activate
 
-COPY api/package.json ./package.json
-COPY pnpm-lock.yaml ./
+# copier les fichiers nécessaires au workspace
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY api/package.json ./api/package.json
 
-RUN pnpm install --no-frozen-lockfile
+# installer uniquement les deps de l'api
+RUN pnpm -C api install --prod --frozen-lockfile
 
-COPY api/ .
+# copier le code
+COPY api ./api
 
 ENV NODE_ENV=production
 ENV PORT=3000
-
 EXPOSE 3000
 
-CMD ["pnpm", "start"]
+CMD ["node", "api/index.js"]

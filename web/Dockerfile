@@ -1,23 +1,21 @@
-FROM node:24-alpine AS builder
-
+FROM node:20-alpine AS builder
 WORKDIR /app
 
-RUN npm i -g pnpm@9
+RUN corepack enable && corepack prepare pnpm@9 --activate
 
-COPY pnpm-lock.yaml ./
-COPY web/package.json ./package.json
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY web/package.json ./web/package.json
 
-RUN pnpm install --no-frozen-lockfile
+RUN pnpm -C web install --frozen-lockfile
+COPY web ./web
 
-COPY web/ .
-
-RUN pnpm build
+RUN pnpm -C web build
 
 FROM nginx:alpine
 
-COPY web/nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=builder /app/dist /usr/share/nginx/html
+# IMPORTANT: template pour envsubst (API_URL)
+COPY web/nginx.conf /etc/nginx/templates/default.conf.template
+COPY --from=builder /app/web/dist /usr/share/nginx/html
 
 EXPOSE 80
-
 CMD ["nginx", "-g", "daemon off;"]

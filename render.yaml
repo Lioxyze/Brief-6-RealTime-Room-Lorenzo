@@ -22,3 +22,6 @@ services:
     dockerfilePath: web/Dockerfile
     autoDeploy: true
     plan: free
+    envVars:
+      - key: API_URL
+        value: https://realtime-room-api.onrender.com
