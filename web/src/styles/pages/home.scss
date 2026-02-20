@@ -1,0 +1,199 @@
+@use "../variables" as *;
+
+.home {
+  display: grid;
+  gap: $space-2xl;
+
+  &__grid {
+    display: grid;
+    gap: $space-2xl;
+    align-items: start;
+  }
+
+  &__hero {
+    padding: $space-2xl;
+    border: 1px solid $line-strong;
+    border-radius: $radius-xl;
+    background: linear-gradient(
+      135deg,
+      rgba(0, 217, 255, 0.05),
+      rgba(217, 70, 239, 0.02)
+    );
+    backdrop-filter: blur(10px);
+    overflow: hidden;
+  }
+
+  &__title {
+    margin: 0 0 $space-md 0;
+    font-size: clamp(32px, 5vw, 48px);
+    font-family: $font-display;
+    font-weight: 700;
+    background: linear-gradient(135deg, $primary, $accent);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.04em;
+  }
+
+  &__desc {
+    margin: 0 0 $space-xl 0;
+    color: $muted;
+    line-height: 1.8;
+    max-width: 520px;
+    font-size: 15px;
+  }
+
+  &__chips {
+    display: flex;
+    gap: $space-md;
+    flex-wrap: wrap;
+  }
+
+  &__chip {
+    border: 1px solid $primary;
+    border-radius: 999px;
+    padding: $space-sm $space-lg;
+    font-size: 11px;
+    color: $primary;
+    font-family: $font-display;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    background: rgba(0, 217, 255, 0.05);
+
+    transition:
+      transform $duration-normal $ease-smooth,
+      box-shadow $duration-normal $ease-smooth,
+      background $duration-normal $ease-smooth;
+
+    &:hover {
+      background: rgba(0, 217, 255, 0.15);
+      box-shadow: 0 0 20px rgba(0, 217, 255, 0.2);
+      transform: translateY(-2px);
+    }
+  }
+
+  &__card {
+    padding: $space-2xl;
+    border-radius: $radius-xl;
+    background: linear-gradient(
+      135deg,
+      rgba(217, 70, 239, 0.08),
+      rgba(0, 217, 255, 0.03)
+    );
+    border: 1px solid $line-strong;
+    box-shadow: $shadow;
+  }
+
+  &__card-head {
+    margin-bottom: $space-xl;
+  }
+
+  &__card-title {
+    font-weight: 700;
+    font-size: 18px;
+    font-family: $font-display;
+    margin-bottom: $space-sm;
+  }
+
+  &__card-sub {
+    color: $muted;
+    font-size: 13px;
+    font-family: $font-display;
+  }
+
+  &__form {
+    display: grid;
+    gap: $space-md;
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: $space-md;
+    margin-top: $space-lg;
+  }
+
+  &__video-section {
+    padding: $space-2xl;
+    border-radius: $radius-xl;
+    border: 1px solid $line-strong;
+    background: linear-gradient(
+      135deg,
+      rgba(0, 217, 255, 0.03),
+      rgba(217, 70, 239, 0.03)
+    );
+    backdrop-filter: blur(10px);
+    box-shadow: $shadow;
+  }
+
+  &__video-head {
+    margin-bottom: $space-lg;
+  }
+
+  &__video-title {
+    font-weight: 700;
+    font-size: 14px;
+    font-family: $font-display;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: $primary;
+    margin-bottom: $space-xs;
+  }
+
+  &__video-sub {
+    color: $muted;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+
+  &__video-frame {
+    width: 100%;
+    border-radius: $radius-xl;
+    border: 1px solid $line-strong;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.03);
+
+    aspect-ratio: 16 / 9;
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+  }
+
+  @media (min-width: 900px) {
+    &__grid {
+      grid-template-columns: 1.2fr 0.8fr;
+      align-items: start;
+    }
+
+    &__card {
+      position: sticky;
+      top: 80px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    gap: $space-lg;
+
+    &__grid {
+      gap: $space-lg;
+    }
+
+    &__hero,
+    &__card,
+    &__video-section {
+      padding: $space-lg;
+    }
+
+    &__title {
+      font-size: 32px;
+    }
+
+    &__chips {
+      gap: $space-sm;
+    }
+  }
+}

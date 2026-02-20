@@ -28,26 +28,66 @@ const io = new Server(server, {
   cors: { origin: true, credentials: true },
 });
 
+const ROOM = "lobby";
+
+const usersBySocket = new Map();
+
 io.on("connection", (socket) => {
   socket.emit("connected", { ok: true });
+
+  socket.on("join", ({ pseudo }) => {
+    const p = String(pseudo || "")
+      .trim()
+      .slice(0, 20);
+    if (p.length < 2) return;
+
+    usersBySocket.set(socket.id, p);
+    socket.join(ROOM);
+
+    io.to(ROOM).emit("message", {
+      id: Date.now(),
+      user: "system",
+      text: `${p} a rejoint #${ROOM}`,
+      type: "system",
+    });
+  });
+
+  socket.on("send", ({ text }) => {
+    const user = usersBySocket.get(socket.id);
+    if (!user) return;
+
+    const msg = String(text || "")
+      .trim()
+      .slice(0, 500);
+    if (!msg) return;
+
+    io.to(ROOM).emit("message", {
+      id: Date.now(),
+      user,
+      text: msg,
+      type: "message",
+    });
+  });
+
+  socket.on("disconnect", () => {
+    const user = usersBySocket.get(socket.id);
+    if (!user) return;
+
+    usersBySocket.delete(socket.id);
+
+    io.to(ROOM).emit("message", {
+      id: Date.now(),
+      user: "system",
+      text: `${user} a quitté #${ROOM}`,
+      type: "system",
+    });
+  });
 });
 
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, "0.0.0.0", () =>
-  console.log(`
-Server running on port ${PORT}
-
-            /\\_/\\
-           (  o   o  )
-           (   =^=   )
-           (           )
-           (            )
-           (             ))
-          (__(__)___(__)__)
-
-API ready at back : http://localhost:${PORT}/health
-API ready at front : http://localhost:8080/
-
-`),
-);
+server.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log(`API health : http://localhost:${PORT}/health`);
+  console.log(`Frontend : http://localhost:8080/`);
+});

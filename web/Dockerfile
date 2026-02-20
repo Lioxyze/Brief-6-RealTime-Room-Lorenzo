@@ -13,7 +13,6 @@ RUN pnpm -C web build
 
 FROM nginx:alpine
 
-# IMPORTANT: template pour envsubst (API_URL)
 COPY web/nginx.conf /etc/nginx/templates/default.conf.template
 COPY --from=builder /app/web/dist /usr/share/nginx/html
 

@@ -1,0 +1,47 @@
+@use "../variables" as *;
+
+.shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 16px;
+    border-bottom: 1px solid $line;
+  }
+
+  &__brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  &__logo {
+    width: 38px;
+    height: 38px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #4fd1c5, #805ad5);
+    box-shadow: $shadow-sm;
+  }
+
+  &__title {
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    font-size: 18px;
+  }
+
+  &__main {
+    flex: 1;
+    padding: 18px 16px 28px;
+  }
+
+  &__footer {
+    padding: 14px 16px;
+    border-top: 1px solid $line;
+    color: $muted;
+    font-size: 12px;
+  }
+}

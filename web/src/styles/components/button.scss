@@ -1,0 +1,86 @@
+@use "../variables" as *;
+
+.btn {
+  height: 44px;
+  border-radius: $radius;
+  border: 1px solid transparent;
+  padding: 0 $space-lg;
+  font-weight: 600;
+  font-family: $font-display;
+  cursor: pointer;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+
+  background: linear-gradient(135deg, $primary, $accent);
+  color: $bg;
+  box-shadow: $shadow-sm;
+
+  transition:
+    transform $duration-normal $ease-smooth,
+    box-shadow $duration-normal $ease-smooth,
+    background $duration-normal $ease-smooth,
+    border-color $duration-normal $ease-smooth,
+    opacity $duration-normal $ease-smooth;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow:
+      $shadow-glow,
+      0 20px 40px rgba(0, 217, 255, 0.2);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $primary;
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  &--secondary {
+    background: $bg-accent;
+    color: $primary;
+    border-color: $primary;
+
+    &:hover:not(:disabled) {
+      box-shadow: 0 0 20px rgba(0, 217, 255, 0.2);
+    }
+  }
+
+  &--ghost {
+    background: transparent;
+    color: $primary;
+    border-color: $line-strong;
+
+    &:hover:not(:disabled) {
+      background: rgba(0, 217, 255, 0.08);
+      border-color: $primary;
+      box-shadow: 0 0 20px rgba(0, 217, 255, 0.15);
+    }
+  }
+
+  &--small {
+    height: 36px;
+    font-size: 12px;
+    padding: 0 $space-md;
+  }
+
+  &--large {
+    height: 52px;
+    font-size: 16px;
+    padding: 0 $space-xl;
+  }
+
+  &--full {
+    width: 100%;
+  }
+}

@@ -1,0 +1,36 @@
+@use "../variables" as *;
+
+.field {
+  display: grid;
+  gap: 8px;
+
+  &__label {
+    font-size: 12px;
+    color: $muted;
+  }
+
+  &__input {
+    height: 44px;
+    border-radius: 14px;
+    border: 1px solid $line;
+    background: rgba(255, 255, 255, 0.04);
+    color: white;
+    padding: 0 12px;
+    outline: none;
+
+    &:focus {
+      border-color: rgba(0, 217, 255, 0.7);
+    }
+  }
+
+  &__error {
+    font-size: 12px;
+    color: rgba(255, 107, 107, 0.95);
+  }
+
+  &--error {
+    .field__input {
+      border-color: rgba(255, 107, 107, 0.7);
+    }
+  }
+}
