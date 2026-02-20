@@ -10,10 +10,16 @@ export default function Room({ pseudo, room, onLeave }) {
   const socketRef = useRef(null);
 
   useEffect(() => {
-    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+    
+    const API_URL = import.meta.env.VITE_API_URL || window.location.origin;
 
     const socket = io(API_URL, {
       transports: ["websocket", "polling"],
+      path: "/socket.io/", // ✅ Ajoute ça
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: 5,
     });
 
     socketRef.current = socket;
