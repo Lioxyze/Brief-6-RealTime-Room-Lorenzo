@@ -69,13 +69,6 @@ io.on("connection", (socket) => {
     });
   });
 
-  const io = new Server(server, {
-    cors: {
-      origin: ["https://realtime-room-web.onrender.com"],
-      methods: ["GET", "POST"],
-    },
-  });
-
   socket.on("disconnect", () => {
     const user = usersBySocket.get(socket.id);
     if (!user) return;
