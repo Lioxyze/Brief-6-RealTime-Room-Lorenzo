@@ -24,12 +24,18 @@ app.get("/health", (req, res) => res.json({ ok: true }));
 
 const server = http.createServer(app);
 
+// ✅ MODIFICATION ICI
 const io = new Server(server, {
-  cors: { origin: true, credentials: true },
+  cors: {
+    origin: "*", // ✅ Accepte toutes les origines
+    methods: ["GET", "POST"],
+    credentials: true,
+    allowEIO3: true,
+  },
+  transports: ["websocket", "polling"], // ✅ Supporte les deux
 });
 
 const ROOM = "lobby";
-
 const usersBySocket = new Map();
 
 io.on("connection", (socket) => {
