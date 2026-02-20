@@ -8,95 +8,103 @@ const { Server } = require("socket.io");
 const app = express();
 
 app.use(helmet());
-app.use(cors({ origin: true, credentials: true }));
-app.use(express.json());
-
 app.use(
-  rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 300,
-    standardHeaders: true,
-    legacyHeaders: false,
+  cors({
+    origin: true,
+    credentials: true,
   }),
 );
+app.use(express.json());
 
 app.get("/health", (req, res) => res.json({ ok: true }));
 
 const server = http.createServer(app);
 
-// ✅ MODIFICATION ICI
 const io = new Server(server, {
   cors: {
-    origin: [
-      "http://localhost:5173",
-      "http://localhost:8080",
-      "https://realtime-room-web.onrender.com",
-    ],
+    origin: "*",
     methods: ["GET", "POST"],
-    credentials: true,
   },
   transports: ["websocket", "polling"],
 });
 
-const ROOM = "lobby";
-const usersBySocket = new Map();
+const clients = new Map(); // socket.id -> { pseudo, room }
+
+const cleanRoom = (room) =>
+  String(room || "lobby")
+    .trim()
+    .replace(/^#/, "")
+    .slice(0, 30) || "lobby";
+
+const cleanPseudo = (pseudo) =>
+  String(pseudo || "")
+    .trim()
+    .slice(0, 20);
 
 io.on("connection", (socket) => {
-  socket.emit("connected", { ok: true });
+  console.log("✅ connected:", socket.id);
 
-  socket.on("join", ({ pseudo }) => {
-    const p = String(pseudo || "")
-      .trim()
-      .slice(0, 20);
-    if (p.length < 2) return;
-
-    usersBySocket.set(socket.id, p);
-    socket.join(ROOM);
-
-    io.to(ROOM).emit("message", {
-      id: Date.now(),
-      user: "system",
-      text: `${p} a rejoint #${ROOM}`,
-      type: "system",
-    });
+  socket.onAny((event, payload) => {
+    console.log("📩 event:", event, payload);
   });
 
-  socket.on("send", ({ text }) => {
-    const user = usersBySocket.get(socket.id);
-    if (!user) return;
+  socket.emit("connected", { ok: true });
 
+  socket.on("join", ({ pseudo, room }) => {
+    const p = cleanPseudo(pseudo);
+    const r = cleanRoom(room);
+
+    if (p.length < 2) return;
+
+    clients.set(socket.id, { pseudo: p, room: r });
+    socket.join(r);
+
+    const sysMsg = {
+      id: Date.now(),
+      user: "system",
+      text: `${p} a rejoint #${r}`,
+      type: "system",
+    };
+
+    io.to(r).emit("message", sysMsg);
+  });
+
+  socket.on("send", ({ text, room }) => {
+    const info = clients.get(socket.id);
+    if (!info) return;
+
+    const r = cleanRoom(room || info.room);
     const msg = String(text || "")
       .trim()
       .slice(0, 500);
     if (!msg) return;
 
-    io.to(ROOM).emit("message", {
+    const payload = {
       id: Date.now(),
-      user,
+      user: info.pseudo,
       text: msg,
       type: "message",
-    });
+    };
+
+    io.to(r).emit("message", payload);
   });
 
   socket.on("disconnect", () => {
-    const user = usersBySocket.get(socket.id);
-    if (!user) return;
+    const info = clients.get(socket.id);
+    if (!info) return;
 
-    usersBySocket.delete(socket.id);
+    clients.delete(socket.id);
 
-    io.to(ROOM).emit("message", {
+    const sysMsg = {
       id: Date.now(),
       user: "system",
-      text: `${user} a quitté #${ROOM}`,
+      text: `${info.pseudo} a quitté #${info.room}`,
       type: "system",
-    });
+    };
+
+    io.to(info.room).emit("message", sysMsg);
   });
 });
 
-const PORT = process.env.PORT || 3000;
-
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`API health : http://localhost:${PORT}/health`);
-  console.log(`Frontend : http://localhost:8080/`);
-});
+const PORT = process.env.PORT || 3001;
+server.listen(PORT, () => console.log("API up on", PORT));

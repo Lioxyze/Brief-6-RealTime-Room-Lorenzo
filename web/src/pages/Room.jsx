@@ -10,12 +10,13 @@ export default function Room({ pseudo, room, onLeave }) {
   const socketRef = useRef(null);
 
   useEffect(() => {
-    
-    const API_URL = import.meta.env.VITE_API_URL || window.location.origin;
+    const API_URL =
+      import.meta.env.VITE_API_URL ||
+      "https://realtime-room-api-2l1i.onrender.com";
 
     const socket = io(API_URL, {
       transports: ["websocket", "polling"],
-      path: "/socket.io/", // ✅ Ajoute ça
+      path: "/socket.io/",
       reconnection: true,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
