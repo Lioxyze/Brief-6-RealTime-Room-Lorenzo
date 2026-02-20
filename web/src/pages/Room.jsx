@@ -10,21 +10,15 @@ export default function Room({ pseudo, room, onLeave }) {
   const socketRef = useRef(null);
 
   useEffect(() => {
-    const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
-
-    const socket = io(API_URL, {
+    const socket = io(window.location.origin, {
+      path: "/socket.io",
       transports: ["websocket", "polling"],
     });
 
     socketRef.current = socket;
 
-    const join = () => {
-      socket.emit("join", { pseudo, room });
-    };
-
-    const handleMessage = (msg) => {
-      setMessages((m) => [...m, msg]);
-    };
+    const join = () => socket.emit("join", { pseudo, room });
+    const handleMessage = (msg) => setMessages((m) => [...m, msg]);
 
     socket.on("connect", join);
     socket.on("message", handleMessage);
@@ -32,15 +26,12 @@ export default function Room({ pseudo, room, onLeave }) {
     return () => {
       socket.off("connect", join);
       socket.off("message", handleMessage);
-
       try {
         socket.emit("leave", { pseudo, room });
       } catch (e) {}
-
       socket.disconnect();
     };
   }, [pseudo, room]);
-
   const send = () => {
     const value = text.trim();
     if (!value) return;
