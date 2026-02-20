@@ -27,12 +27,15 @@ const server = http.createServer(app);
 // ✅ MODIFICATION ICI
 const io = new Server(server, {
   cors: {
-    origin: "*", // ✅ Accepte toutes les origines
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:8080",
+      "https://realtime-room-web.onrender.com",
+    ],
     methods: ["GET", "POST"],
     credentials: true,
-    allowEIO3: true,
   },
-  transports: ["websocket", "polling"], // ✅ Supporte les deux
+  transports: ["websocket", "polling"],
 });
 
 const ROOM = "lobby";
@@ -92,7 +95,7 @@ io.on("connection", (socket) => {
 
 const PORT = process.env.PORT || 3000;
 
-server.listen(PORT, "0.0.0.0", () => {
+server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`API health : http://localhost:${PORT}/health`);
   console.log(`Frontend : http://localhost:8080/`);
