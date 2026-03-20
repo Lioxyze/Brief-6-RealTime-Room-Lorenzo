@@ -43,6 +43,8 @@ Ouvrir le site (Vite) affiché dans la console (généralement http://localhost:
 
 Le jeu est déployé sur : https://realtime-room-web.onrender.com/
 
+Loom : https://www.loom.com/share/a2d7fd36409d45d29be6f85e82363ccf
+
 ## Tests
 
 Le client utilise `vitest`. Pour lancer les tests :
