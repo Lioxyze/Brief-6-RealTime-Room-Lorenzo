@@ -19,6 +19,7 @@ export default function CyberJumpMenu({
   isReady,
   countdown,
   remotePlayersDataState,
+  controlsLocked,
   onStartReady,
   onReleaseAvatar,
   onChooseAvatar,
@@ -28,6 +29,9 @@ export default function CyberJumpMenu({
   onResume,
 }) {
   if (!open) return null;
+
+  const locked = !!controlsLocked;
+  const canReady = !!avatar;
 
   return (
     <div className="cyberjump__overlay" aria-hidden={!open}>
@@ -39,6 +43,7 @@ export default function CyberJumpMenu({
               <div className="cyberjump__menu-actions">
                 <button
                   className="cyberjump__btn cyberjump__btn--primary"
+                  disabled={locked}
                   onClick={onResume}
                 >
                   Reprendre
@@ -123,14 +128,27 @@ export default function CyberJumpMenu({
           <div style={{ display: "flex", gap: 8 }}>
             <button
               className={`cyberjump__btn cyberjump__btn--large cyberjump__btn--primary ${isReady ? "cyberjump__btn--selected" : ""}`}
+              disabled={locked || !canReady}
               onClick={onStartReady}
+              title={
+                !canReady
+                  ? "Choisissez David ou Lucy pour être prêt"
+                  : undefined
+              }
             >
               {isReady ? "Je ne suis plus prêt" : "Je suis prêt"}
             </button>
 
+            {!canReady && (
+              <div style={{ color: "#ffb86b", fontSize: 12, marginTop: 4 }}>
+                Choisissez David ou Lucy pour pouvoir lancer la partie
+              </div>
+            )}
+
             {avatar && (
               <button
                 className="cyberjump__btn cyberjump__btn--large cyberjump__btn--outline"
+                disabled={locked || isReady}
                 onClick={onReleaseAvatar}
               >
                 Libérer avatar
@@ -142,20 +160,15 @@ export default function CyberJumpMenu({
             <button
               className="cyberjump__btn cyberjump__btn--large"
               type="button"
+              disabled={locked}
               onClick={onOpenRules}
             >
               Règles
             </button>
             <button
-              className="cyberjump__btn cyberjump__btn--large"
-              type="button"
-              onClick={onQuit}
-            >
-              Quitter
-            </button>
-            <button
               className="cyberjump__btn cyberjump__btn--large cyberjump__btn--outline"
               type="button"
+              disabled={locked}
               onClick={onToggleFullscreen}
             >
               Plein écran
@@ -168,6 +181,7 @@ export default function CyberJumpMenu({
             <button
               className={`cyberjump__btn cyberjump__btn--icon ${avatar === "david" ? "cyberjump__btn--selected" : ""}`}
               type="button"
+              disabled={locked || isReady}
               onClick={() => onChooseAvatar("david")}
               title="Choisir David"
               aria-pressed={avatar === "david"}
@@ -178,6 +192,7 @@ export default function CyberJumpMenu({
             <button
               className={`cyberjump__btn cyberjump__btn--icon ${avatar === "lucy" ? "cyberjump__btn--selected" : ""}`}
               type="button"
+              disabled={locked || isReady}
               onClick={() => onChooseAvatar("lucy")}
               title="Choisir Lucy"
               aria-pressed={avatar === "lucy"}
@@ -188,6 +203,7 @@ export default function CyberJumpMenu({
             <button
               className={`cyberjump__btn cyberjump__btn--icon ${avatar == null ? "cyberjump__btn--selected" : ""}`}
               type="button"
+              disabled={locked || isReady}
               onClick={() => onChooseAvatar(null)}
               title="Aucun personnage / placeholder"
               aria-pressed={avatar == null}

@@ -10,6 +10,16 @@
     align-items: start;
   }
 
+  &__main {
+    display: grid;
+    gap: $space-2xl;
+    min-width: 0;
+  }
+
+  &__sidebar {
+    min-width: 0;
+  }
+
   &__hero {
     padding: $space-2xl;
     border: 1px solid $line-strong;
@@ -114,6 +124,80 @@
     margin-top: $space-lg;
   }
 
+  &__rooms {
+    display: grid;
+    gap: $space-md;
+    margin-top: $space-xl;
+    padding-top: $space-lg;
+    border-top: 1px solid $line-strong;
+  }
+
+  &__rooms-title {
+    font-family: $font-display;
+    font-weight: 700;
+    font-size: 14px;
+    color: $primary;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  &__rooms-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: $space-sm;
+    max-height: 320px;
+    overflow: auto;
+    padding-right: $space-xs;
+  }
+
+  &__rooms-empty {
+    color: $muted;
+    font-size: 13px;
+    padding: $space-md 0;
+  }
+
+  &__rooms-item {
+    display: grid;
+    gap: $space-sm;
+    padding: $space-md;
+    border: 1px solid $line-strong;
+    border-radius: $radius-lg;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.03),
+      rgba(0, 217, 255, 0.03)
+    );
+    min-width: 0;
+  }
+
+  &__rooms-meta {
+    min-width: 0;
+  }
+
+  &__rooms-name {
+    font-family: $font-display;
+    font-weight: 700;
+    font-size: 14px;
+    color: #fff;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__rooms-count {
+    font-size: 12px;
+    color: $muted;
+  }
+
+  &__rooms-actions {
+    display: flex;
+    align-items: center;
+
+    .btn {
+      width: 100%;
+    }
+  }
+
   &__video-section {
     padding: $space-2xl;
     border-radius: $radius-xl;
@@ -150,9 +234,9 @@
   &__video-frame {
     width: 100%;
     border-radius: $radius-xl;
-    border: 1px solid $line-strong;
     overflow: hidden;
-    background: rgba(255, 255, 255, 0.03);
+    border: none;
+    background: transparent;
 
     aspect-ratio: 16 / 9;
 
@@ -160,6 +244,8 @@
       width: 100%;
       height: 100%;
       display: block;
+      border: none;
+      background: transparent;
     }
   }
 
@@ -170,8 +256,14 @@
     }
 
     &__card {
+      position: relative;
+      top: auto;
+    }
+
+    &__sidebar {
       position: sticky;
       top: 80px;
+      align-self: start;
     }
   }
 
@@ -194,6 +286,18 @@
 
     &__chips {
       gap: $space-sm;
+    }
+
+    &__main,
+    &__sidebar {
+      gap: $space-lg;
+    }
+
+    &__rooms-list {
+      grid-template-columns: 1fr;
+      max-height: none;
+      overflow: visible;
+      padding-right: 0;
     }
   }
 }

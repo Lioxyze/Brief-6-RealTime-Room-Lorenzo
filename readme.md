@@ -1,60 +1,88 @@
-# Brief-6-RealTime-Room-Lorenzo
+# CyberJump — Brief 6
 
-Courte démo d'une application de chat temps réel avec rooms dynamiques.
+Petit jeu multijoueur local (Socket.IO) développé en React + Node.js.
 
-## Démo
+## Structure
 
-- (Si démo en ligne) Lien : <mettre le lien ici>
+- `api/` : serveur Node.js + Socket.IO (point d'entrée : `api/index.js`).
+- `web/` : client React (Vite). Contient le jeu `CyberJump`.
 
-## Stack
+## Prérequis
 
-- Frontend : React
-- Backend : Express
-- Temps réel : Socket.IO
-
-## Architecture
-
-Séparation frontend / backend. Le frontend (dossier `web`) consomme une API temps réel exposée par le backend (dossier `api`).
+- Node.js (>=18 recommandé)
+- pnpm (le workspace utilise `pnpm`)
 
 ## Installation
 
-1. Installer les dépendances :
+Depuis la racine du repo :
 
-```
+```bash
 pnpm install
+pnpm -w install
 ```
 
-2. Lancer les services en développement (depuis la racine ou dans les dossiers) :
+## Lancer en dev
 
-```
+1. Démarrer l'API :
+
+```bash
+cd api
 pnpm dev
 ```
 
-Pour lancer uniquement le backend : lancez `pnpm dev` dans le dossier `api`.
-Pour lancer uniquement le frontend : lancez `pnpm dev` dans le dossier `web`.
+2. Démarrer le client :
 
-## Scripts utiles
-
-- `pnpm dev` : démarre l'environnement de développement
-- `pnpm build` : génère la build de production
-- `pnpm lint` : lance linsing (si configuré)
-
-## Workflow Git
-
-Utiliser des commits conventionnels : `type(scope): message`
-
-Exemple :
-
-```
-"feat: add room system "
+```bash
+cd web
+pnpm dev
 ```
 
-## Fonctionnalités
+Ouvrir le site (Vite) affiché dans la console (généralement http://localhost:5173).
 
-- Chat en temps réel
-- Rooms dynamiques (création/rejoindre)
-- Synchronisation des participants et messages
+## Démo en ligne
 
-## Contribution
+Le jeu est déployé sur : https://realtime-room-web.onrender.com/
 
-Forker le repo, créer une branche feature, ouvrir une pull request.
+## Tests
+
+Le client utilise `vitest`. Pour lancer les tests :
+
+```bash
+cd web
+pnpm test
+# ou pour exécuter en une passe
+pnpm run test:run
+```
+
+Remarque : je peux exécuter et corriger les tests si vous me donnez l'autorisation d'exécuter les commandes dans votre environnement.
+
+## Changements récents / points importants
+
+- Santé du joueur gérée en pourcentage (0–100).
+- Dégâts des projectiles ajustés (~10% par hit).
+- Vitesse des projectiles réglée (valeur paramétrée dans `web/src/game/cyberjump/Game.jsx`).
+- Cooldown de tir dynamique : mode rapide en début de partie et mode lent hors partie.
+- Bouclier activable (clic droit) : 3s d'activation, 10s de cooldown (server + client).
+- HUD de capacité ajouté, avec visuel et sons (`music-8bit.mp3`, `tirson.mp3`).
+- Le fond du niveau change à chaque début de partie (entre `Fond-Jeu-Video.gif` et `paysage.gif`).
+- Obstacles désactivés côté client (no-op) sur demande.
+
+## Où regarder
+
+- `web/src/game/cyberjump/Game.jsx` — logique de jeu, sons, HUD, toggle de fond, cooldowns.
+- `web/src/game/cyberjump/projectiles.jsx` — gestion des projectiles.
+- `api/index.js` — logique serveur (vie, dégâts, bouclier).
+
+## Prochaines étapes suggérées
+
+- Lancer la suite de tests (`pnpm test`) et corriger les erreurs éventuelles.
+- Commit / push des changements locaux.
+- Ajustements d'équilibrage (vitesse, dégâts, durée bouclier).
+
+Si vous voulez, je peux :
+
+- Exécuter et corriger les tests maintenant.
+- Créer les commits et fournir les commandes Git.
+- Ajouter un bouton dans le menu pour forcer le changement de fond.
+
+Dites-moi ce que vous préférez que je fasse en priorité.

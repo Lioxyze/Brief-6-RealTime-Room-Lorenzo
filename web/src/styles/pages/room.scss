@@ -3,6 +3,7 @@
 .room {
   display: grid;
   gap: $space-xl;
+  min-width: 0;
 
   &__top {
     padding: $space-lg;
@@ -18,12 +19,15 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: $space-md;
   }
 
   &__meta {
     display: flex;
     align-items: center;
     gap: $space-lg;
+    min-width: 0;
+    flex-wrap: wrap;
   }
 
   &__name {
@@ -40,6 +44,7 @@
     color: $muted;
     font-size: 13px;
     font-family: $font-display;
+    min-width: 0;
 
     &::before {
       content: "@";
@@ -51,11 +56,23 @@
   &__top-actions {
     display: flex;
     gap: $space-md;
+    flex-shrink: 0;
   }
 
   &__grid {
     display: grid;
     gap: $space-lg;
+    min-width: 0;
+  }
+
+  &__main {
+    display: grid;
+    gap: $space-lg;
+    min-width: 0;
+  }
+
+  &__game-column {
+    min-width: 0;
   }
 
   &__messages {
@@ -69,17 +86,80 @@
     padding: $space-xl;
     height: 60vh;
     overflow-y: auto;
+    overflow-x: hidden;
     box-shadow: $shadow;
 
     display: flex;
     flex-direction: column;
     gap: $space-md;
+    min-width: 0;
+    position: relative;
+    /* hide native scrollbar for a cleaner Discord-like look */
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+    &::-webkit-scrollbar {
+      width: 0;
+      height: 0;
+    }
+
+    .room__new-messages {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 16px;
+      background: linear-gradient(135deg, $primary, $accent);
+      color: $bg;
+      border: none;
+      padding: 8px 12px;
+      border-radius: $radius;
+      font-weight: 600;
+      font-family: $font-display;
+      box-shadow: $shadow-glow;
+      cursor: pointer;
+      z-index: 10;
+      transition:
+        transform $duration-normal $ease-smooth,
+        opacity $duration-normal $ease-smooth;
+
+      &:hover {
+        transform: translateX(-50%) translateY(-4px);
+      }
+    }
+
+    .room__loader {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: $space-sm;
+      background: rgba(0, 0, 0, 0.36);
+      z-index: 20;
+      color: $bg;
+
+      .room__spinner {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: 4px solid rgba(255, 255, 255, 0.12);
+        border-top-color: $primary;
+        animation: room-spin 1s linear infinite;
+      }
+
+      .room__loader-text {
+        font-size: 13px;
+        color: $bg;
+        opacity: 0.95;
+      }
+    }
   }
 
   .msg {
     display: flex;
     flex-direction: column;
     gap: $space-xs;
+    min-width: 0;
 
     &__user {
       font-size: 11px;
@@ -88,16 +168,23 @@
       font-family: $font-display;
       text-transform: uppercase;
       letter-spacing: 0.05em;
+      min-width: 0;
     }
 
     &__bubble {
       display: inline-block;
+      width: fit-content;
+      max-width: min(75%, 100%);
+      min-width: 0;
       padding: $space-md $space-lg;
       border-radius: $radius-lg;
       background: rgba(255, 255, 255, 0.06);
       border: 1px solid $line;
-      max-width: 75%;
+      line-height: 1.5;
+
+      overflow-wrap: anywhere;
       word-break: break-word;
+      white-space: pre-wrap;
 
       transition:
         background $duration-normal $ease-smooth,
@@ -127,6 +214,7 @@
       margin: $space-md 0;
 
       .msg__bubble {
+        max-width: min(90%, 100%);
         text-align: center;
         font-size: 12px;
         color: $muted;
@@ -137,13 +225,8 @@
     }
   }
 
-  &__side {
-    display: flex;
-    flex-direction: column;
-    gap: $space-lg;
-  }
-
-  &__side-card {
+  &__side-card,
+  &__info-card {
     padding: $space-lg;
     border-radius: $radius-lg;
     background: linear-gradient(
@@ -153,6 +236,7 @@
     );
     border: 1px solid $line-strong;
     backdrop-filter: blur(10px);
+    min-width: 0;
   }
 
   &__side-title {
@@ -169,11 +253,23 @@
     color: $muted;
     font-size: 12px;
     line-height: 1.6;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  &__game {
+    width: 100%;
+    height: 720px;
+    min-height: 720px;
+    border-radius: $radius-lg;
+    overflow: hidden;
+    border: 1px solid $line-strong;
+    position: relative;
   }
 
   &__composer {
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     gap: $space-md;
 
     padding: $space-lg;
@@ -185,9 +281,12 @@
     );
     border: 1px solid $line-strong;
     backdrop-filter: blur(10px);
+    min-width: 0;
   }
 
   &__input {
+    width: 100%;
+    min-width: 0;
     height: 44px;
     border-radius: $radius;
     border: 1px solid $line-strong;
@@ -223,6 +322,7 @@
     font-weight: 600;
     font-family: $font-display;
     cursor: pointer;
+    flex-shrink: 0;
 
     transition:
       transform $duration-normal $ease-smooth,
@@ -252,42 +352,105 @@
   }
 
   @media (min-width: 1024px) {
-    grid-template-columns: 2fr 1fr;
+    &__grid {
+      grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.95fr);
+      align-items: start;
+    }
+
+    &__main {
+      min-width: 0;
+    }
+
+    &__game-column {
+      align-self: start;
+      position: sticky;
+      top: 24px;
+      height: min(100vh - 48px, 860px);
+      display: flex;
+      flex-direction: column;
+    }
+
+    &__game-column > .room__side-card {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+    }
+
+    &__game {
+      flex: 1;
+      height: auto;
+      min-height: 0;
+    }
+
+    &__game-column > .room__side-card + .room__side-card {
+      display: none;
+    }
 
     &__messages {
-      grid-column: 1;
-      grid-row: 2;
+      height: calc(100vh - 360px);
+      min-height: 420px;
+    }
+  }
+
+  @media (max-width: 1023px) {
+    &__grid {
+      grid-template-columns: 1fr;
     }
 
-    &__composer {
-      grid-column: 1;
-      grid-row: 3;
+    &__game-column {
+      position: static;
     }
 
-    &__side {
-      grid-column: 2;
-      grid-row: 1 / 4;
+    &__main {
     }
 
-    &__top {
-      grid-column: 1 / 3;
-      grid-row: 1;
+    &__messages {
+      height: 48vh;
     }
   }
 
   @media (max-width: 768px) {
     &__top,
     &__messages,
-    &__composer {
+    &__composer,
+    &__side-card,
+    &__info-card {
       padding: $space-lg;
     }
 
-    &__messages {
-      height: 50vh;
+    &__top {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    &__composer {
+      grid-template-columns: 1fr;
+    }
+
+    &__send {
+      width: 100%;
     }
 
     .msg__bubble {
-      max-width: 90%;
+      max-width: 100%;
+    }
+
+    &__game {
+      min-height: 320px;
+    }
+
+    &__messages {
+      height: 42vh;
+      min-height: 320px;
+    }
+  }
+  @keyframes room-spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
     }
   }
 }

@@ -66,8 +66,8 @@ export default function useCyberJumpRoomSocket({
           avatar: av,
           ready: !!rd,
           side: side || null,
-          health: health ?? 3,
-          maxHealth: maxHealth ?? 3,
+          health: health ?? 100,
+          maxHealth: maxHealth ?? 100,
         });
       });
     };
@@ -88,9 +88,9 @@ export default function useCyberJumpRoomSocket({
         avatar: av,
         ready: !!rd,
         side: side || null,
-        health: health ?? remotePlayersDataRef.current.get(id)?.health ?? 3,
+        health: health ?? remotePlayersDataRef.current.get(id)?.health ?? 100,
         maxHealth:
-          maxHealth ?? remotePlayersDataRef.current.get(id)?.maxHealth ?? 3,
+          maxHealth ?? remotePlayersDataRef.current.get(id)?.maxHealth ?? 100,
         currentX: remotePlayersDataRef.current.get(id)?.currentX,
         currentY: remotePlayersDataRef.current.get(id)?.currentY,
       });
@@ -141,8 +141,8 @@ export default function useCyberJumpRoomSocket({
       (players || []).forEach((player) => {
         if (!player?.id) return;
         nextState[player.id] = {
-          health: player.health ?? 3,
-          maxHealth: player.maxHealth ?? 3,
+          health: player.health ?? 100,
+          maxHealth: player.maxHealth ?? 100,
           avatar: player.avatar ?? null,
           side: player.side ?? null,
           pseudo: player.pseudo ?? null,
@@ -170,8 +170,8 @@ export default function useCyberJumpRoomSocket({
         pseudo: cur.pseudo || null,
         ready: !!ready,
         side: cur.side || null,
-        health: cur.health ?? 3,
-        maxHealth: cur.maxHealth ?? 3,
+        health: cur.health ?? 100,
+        maxHealth: cur.maxHealth ?? 100,
       });
     });
 

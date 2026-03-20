@@ -24,7 +24,7 @@ export default function App() {
       return (
         <Room
           pseudo={session.pseudo}
-          room={MAIN_ROOM}
+          room={session.room || MAIN_ROOM}
           onLeave={() => {
             sessionStorage.removeItem("rt_session");
             setSession(null);
@@ -38,8 +38,8 @@ export default function App() {
     return (
       <Home
         room={MAIN_ROOM}
-        onJoin={({ pseudo }) => {
-          const next = { pseudo };
+        onJoin={({ pseudo, room }) => {
+          const next = { pseudo, room };
           sessionStorage.setItem("rt_session", JSON.stringify(next));
           setSession(next);
           window.history.pushState({}, "", "/room");

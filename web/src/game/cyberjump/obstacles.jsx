@@ -1,12 +1,13 @@
-// Contrôleur d'obstacles — API minimale fournie au jeu. Le fichier est
-// volontairement simple (implémentation factice) ; il expose les méthodes
-// utilisées par le jeu pour spawn, mettre à jour et tester les collisions.
+// Contrôleur d'obstacles — implémentation no-op pour supprimer les obstacles
+// Cette version conserve l'API utilisée par le jeu mais ne crée ni ne met
+// à jour aucun obstacle. Utile pour désactiver les obstacles côté client.
 export function createObstacleController() {
   const clearObstacles = () => {};
   const spawnObstacle = () => {};
   const updateObstacles = () => {};
   const getObstacleMap = () => new Map();
   const hasPlayerCollision = () => false;
+  const getPlatformUnderPlayer = () => null;
 
   return {
     clearObstacles,
@@ -14,5 +15,6 @@ export function createObstacleController() {
     updateObstacles,
     getObstacleMap,
     hasPlayerCollision,
+    getPlatformUnderPlayer,
   };
 }

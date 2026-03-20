@@ -8,6 +8,8 @@ JOUEUR :
 - Se déplacer : Q / D (ou A / D)
 - Sauter : Z (ou W) / Espace
 - Tirer un robot : clic souris ou bouton 🤖
+- Tirer un robot : clic souris ou bouton 🤖
+- Bouclier temporaire : clic droit active un bouclier pendant 3 secondes (bloque les dégâts). Recharge : 10s.
 
 Le saut est plus maniable :
 - Maintenir la touche = saut plus haut

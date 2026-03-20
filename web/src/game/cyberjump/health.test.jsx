@@ -3,9 +3,9 @@ import { buildHealthPanels, getHealthPercent } from "./health.jsx";
 
 describe("health", () => {
   it("calcule un pourcentage de vie borné", () => {
-    expect(getHealthPercent(2, 4)).toBe(50);
-    expect(getHealthPercent(-2, 4)).toBe(0);
-    expect(getHealthPercent(10, 4)).toBe(100);
+    expect(getHealthPercent(50, 100)).toBe(50);
+    expect(getHealthPercent(-2, 100)).toBe(0);
+    expect(getHealthPercent(140, 100)).toBe(100);
   });
 
   it("construit et trie les panneaux de vie", () => {
@@ -14,9 +14,9 @@ describe("health", () => {
       localSide: "right",
       localAvatar: "david",
       playersHealth: {
-        me: { health: 2, maxHealth: 5 },
-        remoteA: { health: 1, maxHealth: 4 },
-        remoteB: { health: 3, maxHealth: 3 },
+        me: { health: 50, maxHealth: 100 },
+        remoteA: { health: 25, maxHealth: 100 },
+        remoteB: { health: 75, maxHealth: 100 },
       },
       remotePlayersDataState: {
         remoteA: { avatar: "lucy", pseudo: "Adversaire", side: "left" },
@@ -42,8 +42,7 @@ describe("health", () => {
       name: "Vous",
       side: "right",
       isLocal: true,
-      health: 2,
-      maxHealth: 5,
+      healthPercent: 50,
     });
   });
 });

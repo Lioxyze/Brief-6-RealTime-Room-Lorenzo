@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import "../../styles/components/cyberjump.scss";
 import bgGif from "../../assets/cyberjump/Fond-Jeu-Video.gif";
+import paysageGif from "../../assets/cyberjump/paysage.gif";
 import David from "../../assets/cyberjump/David.png";
 import Lucy from "../../assets/cyberjump/Lucy.png";
 import corpGif from "../../assets/cyberjump/LioCorp-20-03-2024.gif";
 import { CONTROLLED_KEYS, PLAYER_KEYS, isPressed } from "./input.jsx";
+import bgMusic from "../../assets/cyberjump/music-8bit.mp3";
+import tirSound from "../../assets/cyberjump/tirson.mp3";
 import {
   createGameState,
   resetGameState,
@@ -31,14 +34,19 @@ const WORLD_HEIGHT = 720;
 const PLAYER_SPRITE_WIDTH = 60;
 const REMOTE_LERP_SPEED = 14;
 
-const SHOOT_COOLDOWN_MS = 120;
-const PROJECTILE_SPEED = 1120;
+// Shoot cooldown (default and fast mode used at match start)
+const DEFAULT_SHOOT_COOLDOWN_MS = 300;
+const FAST_SHOOT_COOLDOWN_MS = 120;
+// Projectile speed (tuned) — increased slightly for better feel
+const PROJECTILE_SPEED = 320;
 const PARTICLE_TRAIL_MS = 42;
 
 const PARTICLE_COLORS = {
   david: "rgba(66, 201, 255, 0.95)",
   lucy: "rgba(255, 77, 202, 0.95)",
 };
+
+// Background will change at start/end of each match
 
 const setLeft = (el, value) => {
   const field = el.parentElement;
@@ -76,6 +84,8 @@ export default function CyberJumpGame({ socket, room }) {
   const pausedRef = useRef(false);
   const matchEndedRef = useRef(false);
   const lastShootAtRef = useRef(0);
+  const shootCooldownRef = useRef(DEFAULT_SHOOT_COOLDOWN_MS);
+  const [currentBg, setCurrentBg] = useState(bgGif);
   const gameStateRef = useRef(createGameState());
 
   const [menuOpen, setMenuOpen] = useState(true);
@@ -112,6 +122,15 @@ export default function CyberJumpGame({ socket, room }) {
     return null;
   }
 
+  const remotePlayersReady = Object.values(remotePlayersDataState || {}).filter(
+    Boolean,
+  );
+  const controlsLocked =
+    countdown != null ||
+    (isReady &&
+      remotePlayersReady.length > 0 &&
+      remotePlayersReady.every((player) => player.ready));
+
   const projectileControllerRef = useRef(null);
   if (!projectileControllerRef.current) {
     projectileControllerRef.current = createProjectileController({
@@ -147,6 +166,9 @@ export default function CyberJumpGame({ socket, room }) {
     setBottom(playerEl, player.y);
     playerEl.style.transform =
       player.facing === -1 ? "scaleX(-1)" : "scaleX(1)";
+    // shield visual
+    if (player.shielded) playerEl.classList.add("cyberjump__character--shield");
+    else playerEl.classList.remove("cyberjump__character--shield");
   };
 
   const clearParticlesDom = () =>
@@ -160,11 +182,121 @@ export default function CyberJumpGame({ socket, room }) {
 
   const updateParticlesDom = (dt) => particleControllerRef.current.update(dt);
 
-  const unlockAudio = () => Promise.resolve();
+  const audioCtxRef = useRef(null);
+  const bgAudioRef = useRef(null);
+  const shootAudioRef = useRef(null);
 
-  const playMusic = () => {};
-  const playJumpSound = () => {};
-  const playShootSound = () => {};
+  const ensureAudioCtx = () => {
+    if (!audioCtxRef.current) {
+      audioCtxRef.current = new (
+        window.AudioContext || window.webkitAudioContext
+      )();
+    }
+    return audioCtxRef.current;
+  };
+
+  const unlockAudio = async () => {
+    try {
+      const ctx = ensureAudioCtx();
+      if (ctx.state === "suspended") await ctx.resume();
+    } catch (e) {}
+    // prepare background audio element
+    try {
+      if (!bgAudioRef.current) {
+        const a = new Audio(bgMusic);
+        a.loop = true;
+        a.volume = 0.04;
+        bgAudioRef.current = a;
+      }
+      if (!shootAudioRef.current) {
+        const s = new Audio(tirSound);
+        s.preload = "auto";
+        s.volume = 0.7;
+        shootAudioRef.current = s;
+      }
+      if (bgAudioRef.current.paused) {
+        try {
+          await bgAudioRef.current.play();
+        } catch (e) {
+          // some browsers require user gesture; ignore
+        }
+      }
+    } catch (e) {}
+  };
+
+  const playMusic = async () => {
+    try {
+      await unlockAudio();
+    } catch (e) {}
+  };
+
+  const makeBeep = (freq = 440, type = "sine", len = 0.12, vol = 0.08) => {
+    const ctx = ensureAudioCtx();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = type;
+    o.frequency.value = freq;
+    g.gain.value = 0.0001;
+    o.connect(g);
+    g.connect(ctx.destination);
+    const now = ctx.currentTime;
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.exponentialRampToValueAtTime(Math.max(0.001, vol), now + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + len);
+    o.start(now);
+    o.stop(now + len + 0.02);
+  };
+
+  const playJumpSound = () => makeBeep(880, "sine", 0.12, 0.18);
+  const playShootSound = () => {
+    try {
+      if (shootAudioRef.current) {
+        const a = shootAudioRef.current.cloneNode();
+        a.volume = 0.7;
+        a.play().catch(() => {});
+        return;
+      }
+    } catch (e) {}
+    return makeBeep(720, "triangle", 0.08, 0.28);
+  };
+  const playHitSound = () => makeBeep(220, "square", 0.12, 0.28);
+  const playStartSound = () => makeBeep(1200, "sine", 0.2, 0.18);
+  const playOverSound = () => makeBeep(160, "sine", 0.4, 0.14);
+  // Shield sounds reuse the same audio context/helpers above
+
+  const playShieldActivateSound = () => {
+    const ctx = ensureAudioCtx();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = "sine";
+    o.frequency.value = 900;
+    g.gain.value = 0.0001;
+    o.connect(g);
+    g.connect(ctx.destination);
+    const now = ctx.currentTime;
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.exponentialRampToValueAtTime(0.12, now + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+    o.start(now);
+    o.stop(now + 0.25);
+  };
+
+  const playShieldDeniedSound = () => {
+    const ctx = ensureAudioCtx();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = "square";
+    o.frequency.value = 220;
+    g.gain.value = 0.0001;
+    o.connect(g);
+    g.connect(ctx.destination);
+    const now = ctx.currentTime;
+    g.gain.setValueAtTime(0.0001, now);
+    g.gain.exponentialRampToValueAtTime(0.06, now + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
+    o.start(now);
+    o.stop(now + 0.14);
+  };
 
   const clearProjectilesDom = () =>
     projectileControllerRef.current.clearProjectiles();
@@ -181,6 +313,50 @@ export default function CyberJumpGame({ socket, room }) {
       socket,
       room,
     });
+  };
+
+  // Shield state & cooldown for local player
+  const shieldUntilRef = useRef(0);
+  const lastShieldUsedRef = useRef(0);
+  const SHIELD_COOLDOWN_MS = 10000;
+  const SHIELD_DURATION_MS = 3000;
+
+  const canActivateLocalShield = () =>
+    Date.now() - lastShieldUsedRef.current >= SHIELD_COOLDOWN_MS;
+
+  const activateLocalShield = (ms = SHIELD_DURATION_MS) => {
+    if (!canActivateLocalShield()) return false;
+    const now = Date.now();
+    shieldUntilRef.current = now + ms;
+    lastShieldUsedRef.current = now;
+    try {
+      socket?.emit("player:shield", { room, durationMs: ms });
+    } catch (e) {}
+    const player = gameStateRef.current.player;
+    if (player) player.shielded = true;
+    const playerEl = playerRef.current;
+    if (playerEl) playerEl.classList.add("cyberjump__character--shield");
+    // HUD active visual and sound
+    try {
+      playShieldActivateSound();
+    } catch (e) {}
+    const hud = playfieldRef.current?.querySelector(".cyberjump__ability-hud");
+    if (hud) {
+      hud.classList.add("cyberjump__ability-hud--active");
+      setTimeout(
+        () => hud.classList.remove("cyberjump__ability-hud--active"),
+        ms + 80,
+      );
+    }
+    setTimeout(() => {
+      if (Date.now() >= shieldUntilRef.current) {
+        const p = gameStateRef.current.player;
+        if (p) p.shielded = false;
+        const el = playerRef.current;
+        if (el) el.classList.remove("cyberjump__character--shield");
+      }
+    }, ms + 50);
+    return true;
   };
 
   const clearObstaclesDom = () =>
@@ -240,7 +416,7 @@ export default function CyberJumpGame({ socket, room }) {
     }
 
     const now = Date.now();
-    if (now - lastShootAtRef.current < SHOOT_COOLDOWN_MS) return;
+    if (now - lastShootAtRef.current < shootCooldownRef.current) return;
     lastShootAtRef.current = now;
 
     const player = gameStateRef.current.player;
@@ -412,6 +588,10 @@ export default function CyberJumpGame({ socket, room }) {
     setScore(0);
     setMenuOpen(true);
     setRulesOpen(false);
+    // restore default (slower) shoot cooldown when match ends
+    try {
+      shootCooldownRef.current = DEFAULT_SHOOT_COOLDOWN_MS;
+    } catch (e) {}
   };
 
   const startScoreLoop = () => {
@@ -432,9 +612,37 @@ export default function CyberJumpGame({ socket, room }) {
   const handlePlayfieldPointerDown = (event) => {
     const target = event.target;
     if (target?.closest?.(".cyberjump__btn")) return;
+    // right click -> shield, left click -> shoot
+    if (event.button === 2) {
+      // activate shield 3s (right click). If on cooldown, briefly flash HUD.
+      const ok = activateLocalShield(SHIELD_DURATION_MS);
+      if (!ok) {
+        // flash HUD by toggling a class
+        const hud = playfieldRef.current?.querySelector(
+          ".cyberjump__ability-hud",
+        );
+        if (hud) {
+          hud.classList.add("cyberjump__ability-hud--flash");
+          setTimeout(
+            () => hud.classList.remove("cyberjump__ability-hud--flash"),
+            350,
+          );
+        }
+      }
+      return;
+    }
     unlockAudio();
     shootRobot();
   };
+
+  // prevent context menu on playfield (right click used for shield)
+  useEffect(() => {
+    const field = playfieldRef.current;
+    if (!field) return;
+    const onContext = (e) => e.preventDefault();
+    field.addEventListener("contextmenu", onContext);
+    return () => field.removeEventListener("contextmenu", onContext);
+  }, []);
 
   // Tick : fonction appelée par requestAnimationFrame pour mettre à
   // jour la simulation et le DOM. `now` est un timestamp fourni par RAF.
@@ -468,7 +676,6 @@ export default function CyberJumpGame({ socket, room }) {
       fieldWidth: WORLD_WIDTH,
       fieldHeight: WORLD_HEIGHT,
     });
-
     if (gameStateRef.current.player.justJumped) {
       playJumpSound();
 
@@ -584,6 +791,10 @@ export default function CyberJumpGame({ socket, room }) {
     if (startedRef.current) return;
 
     startedRef.current = true;
+    // change background at start of match
+    try {
+      setCurrentBg((c) => (c === bgGif ? paysageGif : bgGif));
+    } catch (e) {}
     matchEndedRef.current = false;
     setMenuOpen(false);
     setRulesOpen(false);
@@ -609,6 +820,10 @@ export default function CyberJumpGame({ socket, room }) {
       await unlockAudio();
     } catch (e) {}
     playMusic();
+    // temporarily allow faster firing at match start
+    try {
+      shootCooldownRef.current = FAST_SHOOT_COOLDOWN_MS;
+    } catch (e) {}
   };
 
   const toggleFullscreen = () => {
@@ -688,8 +903,64 @@ export default function CyberJumpGame({ socket, room }) {
     setMatchResult,
   });
 
+  // Listen for shield events from server (remote players)
+  useEffect(() => {
+    if (!socket) return;
+    const onShield = ({ id, until }) => {
+      const el = remotePlayersRef.current.get(id);
+      if (el) el.classList.add("cyberjump__character--shield");
+      // clear after expiry
+      const delay = Math.max(0, (until || 0) - Date.now());
+      setTimeout(() => {
+        const e = remotePlayersRef.current.get(id);
+        if (e) e.classList.remove("cyberjump__character--shield");
+      }, delay + 50);
+    };
+
+    const onShieldCleared = ({ id }) => {
+      const el = remotePlayersRef.current.get(id);
+      if (el) el.classList.remove("cyberjump__character--shield");
+    };
+
+    socket.on("player:shield", onShield);
+    socket.on("player:shield:cleared", onShieldCleared);
+
+    const onShieldDenied = ({ remaining }) => {
+      try {
+        playShieldDeniedSound();
+      } catch (e) {}
+      const hud = playfieldRef.current?.querySelector(
+        ".cyberjump__ability-hud",
+      );
+      if (hud) {
+        hud.classList.add("cyberjump__ability-hud--flash");
+        setTimeout(
+          () => hud.classList.remove("cyberjump__ability-hud--flash"),
+          350,
+        );
+      }
+    };
+
+    socket.on("player:shield:denied", onShieldDenied);
+
+    return () => {
+      socket.off("player:shield", onShield);
+      socket.off("player:shield:cleared", onShieldCleared);
+      socket.off("player:shield:denied", onShieldDenied);
+    };
+  }, [socket]);
+
+  // Shield cooldown HUD state update
+  const [, forceRerender] = useState(0);
+  useEffect(() => {
+    const tick = setInterval(() => forceRerender((v) => v + 1), 200);
+    return () => clearInterval(tick);
+  }, []);
+
   useEffect(() => {
     resetPositions();
+
+    // background will be switched at match boundaries (start/end)
 
     const handleResize = () => {
       if (startedRef.current) {
@@ -701,6 +972,7 @@ export default function CyberJumpGame({ socket, room }) {
 
     return () => {
       window.removeEventListener("resize", handleResize);
+      // no periodic bg interval to clear
       pressedRef.current.clear();
 
       try {
@@ -725,7 +997,7 @@ export default function CyberJumpGame({ socket, room }) {
       onKeyUp={handleKeyUp}
       onPointerDown={() => rootRef.current?.focus()}
       onBlur={() => pressedRef.current.clear()}
-      style={{ "--cyberjump-bg": `url(${bgGif})` }}
+      style={{ "--cyberjump-bg": `url(${currentBg})` }}
       aria-label="CyberJump"
     >
       <CyberJumpMenu
@@ -736,6 +1008,7 @@ export default function CyberJumpGame({ socket, room }) {
         isReady={isReady}
         countdown={countdown}
         remotePlayersDataState={remotePlayersDataState}
+        controlsLocked={controlsLocked}
         onStartReady={() => {
           if (!avatar) return;
           const next = !isReady;
@@ -763,6 +1036,32 @@ export default function CyberJumpGame({ socket, room }) {
         ref={playfieldRef}
         onPointerDown={handlePlayfieldPointerDown}
       >
+        {/* Ability HUD (shield) */}
+        <div className="cyberjump__ability-hud" aria-hidden={false}>
+          <div className="cyberjump__ability-hud-row">
+            <div className="cyberjump__ability-hud-label">Bouclier</div>
+            <div className="cyberjump__ability-hud-bar">
+              {(() => {
+                const now = Date.now();
+                const last = lastShieldUsedRef.current || 0;
+                const cooldown = SHIELD_COOLDOWN_MS;
+                const remaining = Math.max(0, cooldown - (now - last));
+                const pct = Math.round((1 - remaining / cooldown) * 100);
+                return (
+                  <>
+                    <div
+                      className="cyberjump__ability-hud-fill"
+                      style={{ width: `${pct}%` }}
+                    />
+                    <div className="cyberjump__ability-hud-txt">
+                      {remaining > 0 ? `${Math.ceil(remaining / 1000)}s` : "OK"}
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+        </div>
         <CyberJumpHud
           score={score}
           countdown={countdown}

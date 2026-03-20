@@ -8,13 +8,17 @@ export const CONTROLLED_KEYS = new Set([
   "KeyZ",
   "KeyW",
   "Space",
+  "ArrowLeft",
+  "ArrowRight",
+  "ArrowUp",
+  "ArrowDown",
 ]);
 
 // Regroupement logique des touches pour les actions du joueur.
 export const PLAYER_KEYS = {
-  left: ["KeyQ", "KeyA"],
-  right: ["KeyD"],
-  jump: ["Space", "KeyZ", "KeyW"],
+  left: ["KeyQ", "KeyA", "ArrowLeft"],
+  right: ["KeyD", "ArrowRight"],
+  jump: ["Space", "KeyZ", "KeyW", "ArrowUp"],
 };
 
 // Helper : retourne true si l'une des `codes` est présente dans le set `pressedKeys`.

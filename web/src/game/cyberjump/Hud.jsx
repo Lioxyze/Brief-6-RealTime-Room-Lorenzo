@@ -1,5 +1,3 @@
-import { getHealthPercent } from "./health.jsx";
-
 // HUD minimal affichant :
 // - les barres de vie pour chaque joueur (`healthPanels`)
 // - le score local
@@ -12,10 +10,7 @@ export default function CyberJumpHud({ score, countdown, healthPanels = [] }) {
     <div className="cyberjump__hud" aria-live="polite">
       <div className="cyberjump__hud-health">
         {healthPanels.map((player) => {
-          const healthPercent = getHealthPercent(
-            player.health,
-            player.maxHealth,
-          );
+          const healthPercent = player.healthPercent ?? 100;
 
           return (
             <div
@@ -31,7 +26,7 @@ export default function CyberJumpHud({ score, countdown, healthPanels = [] }) {
                     {player.name}
                   </span>
                   <span className="cyberjump__hud-player-life">
-                    {Math.max(0, player.health)}/{Math.max(1, player.maxHealth)}
+                    {Math.max(0, Math.round(healthPercent))}%
                   </span>
                 </div>
               </div>

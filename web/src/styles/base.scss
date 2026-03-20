@@ -9,6 +9,7 @@
 html,
 body {
   height: 100%;
+  scrollbar-width: none;
 }
 
 body {
@@ -31,4 +32,8 @@ a {
 button,
 input {
   font: inherit;
+}
+
+body::-webkit-scrollbar {
+  display: none;
 }

@@ -42,6 +42,48 @@
     padding: 14px 16px;
     border-top: 1px solid $line;
     color: $muted;
-    font-size: 12px;
+    font-size: 13px;
+    .shell__footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    &-left,
+    &-center,
+    &-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    &-center {
+      justify-content: center;
+      flex: 1;
+    }
+
+    .shell__link {
+      color: $muted-dark;
+      text-decoration: none;
+      padding: 6px 10px;
+      border-radius: $radius;
+      background: linear-gradient(
+        90deg,
+        rgba(0, 217, 255, 0.04),
+        rgba(217, 70, 239, 0.03)
+      );
+      border: 1px solid rgba(255, 255, 255, 0.02);
+      transition: all $duration-fast $ease-smooth;
+
+      &:hover {
+        color: $primary;
+        transform: translateY(-2px);
+        box-shadow: $shadow-glow;
+      }
+    }
   }
 }
